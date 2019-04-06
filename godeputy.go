@@ -82,14 +82,11 @@ func (v *Deputy) AccessToken() (string, string, time.Time, string, error) {
 
 // RefreshToken will get a new refresg token
 func (v *Deputy) RefreshToken(refreshtoken string) (string, string, time.Time, error) {
-	//v.EndPoint
 	u, _ := url.ParseRequestURI("https://" + v.EndPoint + "/")
 	u.Path = "my/oauth/access_token"
 	urlStr := fmt.Sprintf("%v", u)
-
-	//request := fmt.Sprintf("grant_type=refresh_token&refresh_token=%s&redirect_uri=%s&client_id=%s&client_secret=%s", refreshtoken, v.RedirectURI, v.ClientID, v.ClientSecret)
-
 	tr := TokenRequest{
+
 		GrantType:    "refresh_token",
 		RefreshToken: refreshtoken,
 		RedirectURI:  v.RedirectURI,
@@ -102,17 +99,10 @@ func (v *Deputy) RefreshToken(refreshtoken string) (string, string, time.Time, e
 
 	}
 
-	fmt.Println("--------------------------")
-	fmt.Println("Calling Deputy", urlStr)
-	fmt.Println(tr)
-
 	client := &http.Client{}
 	//r, _ := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(request)))
-
 	//r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r, err := http.NewRequest("POST", urlStr, bytes.NewBuffer(b))
-
-	fmt.Println("--------------------------")
 
 	res, _ := client.Do(r)
 
