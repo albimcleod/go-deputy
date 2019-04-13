@@ -1,6 +1,6 @@
 package godeputy
 
-//Company is the struct for a Kounta Site
+//Company is the struct for a Deputy Site
 type Company struct {
 	ID          int    `json:"Id"`
 	CompanyName string `json:"CompanyName"`

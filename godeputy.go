@@ -61,17 +61,12 @@ func (v *Deputy) AccessToken() (string, string, time.Time, string, error) {
 	rawResBody, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		fmt.Println("X", string(rawResBody), err)
-
 		return "", "", time.Now(), "", fmt.Errorf("%v", string(rawResBody))
 	}
-
-	fmt.Println(string(rawResBody))
 
 	if res.StatusCode == 200 {
 		resp := &TokenResponse{}
 		if err := json.Unmarshal(rawResBody, resp); err != nil {
-			fmt.Println("3", string(rawResBody), err)
 			return "", "", time.Now(), "", err
 		}
 		return resp.AccessToken, resp.RefreshToken, time.Now().Add(time.Duration(resp.ExpiresIn) * time.Second), resp.EndPoint, nil
@@ -81,28 +76,22 @@ func (v *Deputy) AccessToken() (string, string, time.Time, string, error) {
 }
 
 // RefreshToken will get a new refresg token
-func (v *Deputy) RefreshToken(refreshtoken string) (string, string, time.Time, error) {
+func (v *Deputy) RefreshToken(refreshtoken string, token string) (string, string, time.Time, error) {
+
 	u, _ := url.ParseRequestURI("https://" + v.EndPoint + "/")
-	u.Path = "my/oauth/access_token"
+	u.Path = "oauth/access_token"
 	urlStr := fmt.Sprintf("%v", u)
-	tr := TokenRequest{
 
-		GrantType:    "refresh_token",
-		RefreshToken: refreshtoken,
-		RedirectURI:  v.RedirectURI,
-		ClientID:     v.ClientID,
-		ClientSecret: v.ClientSecret,
-	}
-
-	b, err := json.Marshal(tr)
-	if err != nil {
-
-	}
+	request := fmt.Sprintf("grant_type=refresh_token&refresh_token=%s&redirect_uri=%s&client_id=%s&client_secret=%s&scope=longlife_refresh_token", refreshtoken, v.RedirectURI, v.ClientID, v.ClientSecret)
 
 	client := &http.Client{}
-	//r, _ := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(request)))
-	//r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r, err := http.NewRequest("POST", urlStr, bytes.NewBuffer(b))
+	r, _ := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(request)))
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "OAuth "+token)
+
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	res, _ := client.Do(r)
 
@@ -119,8 +108,6 @@ func (v *Deputy) RefreshToken(refreshtoken string) (string, string, time.Time, e
 		}
 		return resp.AccessToken, resp.RefreshToken, time.Now().Add(time.Duration(resp.ExpiresIn) * time.Second), nil
 	}
-
-	fmt.Println(string(rawResBody))
 
 	return "", "", time.Now(), fmt.Errorf("Failed to get refresh token: %s", res.Status)
 }
@@ -161,12 +148,102 @@ func (v *Deputy) GetCompanies(token string) (Companies, error) {
 			return nil, err
 		}
 		return resp, nil
+	}
+	return nil, fmt.Errorf("Failed to get Deputy Company %s", res.Status)
+
+}
+
+// GetRosters will
+func (v *Deputy) GetRosters(token string, companyId string, startDate string, endDate string) (Rosters, error) {
+
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
+
+	u, _ := url.ParseRequestURI("https://" + v.EndPoint + "/")
+	u.Path = "api/v1/resource/Roster/QUERY"
+	urlStr := fmt.Sprintf("%v", u)
+
+	request := fmt.Sprintf("{ search: { company: { field: 'Company', type: 'eq', data: '%s' }, dateStart: { field: 'Date', type: 'ge', data: '%v' } , dateEnd: { field: 'Date', type: 'le', data: '%v' }} }", companyId, startDate, endDate)
+
+	r, err := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(request)))
+	if err != nil {
+		return nil, err
+	}
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.Do(r)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	rawResBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	//fmt.Println("rawResBody", string(rawResBody))
+
+	if res.StatusCode == 200 {
+		var resp Rosters
+
+		err = json.Unmarshal(rawResBody, &resp)
 		if err != nil {
 			return nil, err
 		}
 		return resp, nil
 	}
-	return nil, fmt.Errorf("Failed to get Kounta Company %s", res.Status)
+	return nil, fmt.Errorf("Failed to get Deputy rosters %s", res.Status)
+
+}
+
+// GetEmployees will
+func (v *Deputy) GetEmployees(token string, companyId string) (Employees, error) {
+
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
+
+	u, _ := url.ParseRequestURI("https://" + v.EndPoint + "/")
+	u.Path = "api/v1/resource/Employee/QUERY"
+	urlStr := fmt.Sprintf("%v", u)
+
+	request := fmt.Sprintf("{ search: { company: { field: 'Company', type: 'eq', data: '%s' } }, join:['ContactObject'],  }", companyId)
+
+	r, err := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(request)))
+	if err != nil {
+		return nil, err
+	}
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.Do(r)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	rawResBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	//fmt.Println("rawResBody", string(rawResBody))
+
+	if res.StatusCode == 200 {
+		var resp Employees
+
+		err = json.Unmarshal(rawResBody, &resp)
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
+	}
+	return nil, fmt.Errorf("Failed to get Deputy rosters %s", res.Status)
 
 }
 
