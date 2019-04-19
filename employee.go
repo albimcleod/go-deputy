@@ -16,5 +16,6 @@ type Employee struct {
 type Employees []Employee
 
 type Contact struct {
-	Email1 string `json:"FirstName"`
+	Email1 string `json:"Email1"`
+	Phone1 string `json:"Phone1"`
 }

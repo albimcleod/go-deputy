@@ -163,7 +163,10 @@ func (v *Deputy) GetRosters(token string, companyId string, startDate string, en
 	u.Path = "api/v1/resource/Roster/QUERY"
 	urlStr := fmt.Sprintf("%v", u)
 
-	request := fmt.Sprintf("{ search: { company: { field: 'Company', type: 'eq', data: '%s' }, dateStart: { field: 'Date', type: 'ge', data: '%v' } , dateEnd: { field: 'Date', type: 'le', data: '%v' }} }", companyId, startDate, endDate)
+	request := fmt.Sprintf(`{"join":["OperationalUnitObject", "MatchedByTimesheetObject"],"search":{"dateStart":{"field":"Date","type":"ge","data":"%v"},"dateEnd":{"field":"Date","type":"le","data":"%v"}}}`, startDate, endDate)
+
+	//
+	fmt.Println("Search", request)
 
 	r, err := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(request)))
 	if err != nil {
@@ -210,7 +213,9 @@ func (v *Deputy) GetEmployees(token string, companyId string) (Employees, error)
 	u.Path = "api/v1/resource/Employee/QUERY"
 	urlStr := fmt.Sprintf("%v", u)
 
-	request := fmt.Sprintf("{ search: { company: { field: 'Company', type: 'eq', data: '%s' } }, join:['ContactObject'],  }", companyId)
+	request := fmt.Sprintf(`{"search":{"company":{"field":"Company","type":"eq","data":"%s"}},"join":["ContactObject"]}`, companyId)
+
+	fmt.Println(request)
 
 	r, err := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(request)))
 	if err != nil {
