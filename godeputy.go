@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -140,6 +141,8 @@ func (v *Deputy) GetCompanies(token string) (Companies, error) {
 		return nil, err
 	}
 
+	fmt.Println("rawResBody", string(rawResBody))
+
 	if res.StatusCode == 200 {
 		var resp Companies
 
@@ -188,12 +191,14 @@ func (v *Deputy) GetRosters(token string, companyId string, startDate string, en
 		return nil, err
 	}
 
-	//fmt.Println("rawResBody", string(rawResBody))
+	val := strings.Replace(string(rawResBody), `"EmployeeInfo":[],`, "", -1)
+
+	//fmt.Println("val", val)
 
 	if res.StatusCode == 200 {
 		var resp Rosters
 
-		err = json.Unmarshal(rawResBody, &resp)
+		err = json.Unmarshal([]byte(val), &resp)
 		if err != nil {
 			return nil, err
 		}

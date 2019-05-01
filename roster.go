@@ -60,18 +60,19 @@ type EmployeeInfo struct {
 }
 
 type OperationalUnit struct {
-	ID                  int    `json:"Id"`
-	OperationalUnitName string `json:"OperationalUnitName"`
-	Company             int    `json:"Company"`
-	CompanyName         string `json:"CompanyName"`
+	ID                    int    `json:"Id"`
+	OperationalUnitName   string `json:"OperationalUnitName"`
+	Company               int    `json:"Company"`
+	CompanyName           string `json:"CompanyName"`
+	ParentOperationalUnit int    `json:"Company"`
 }
 
 type Timesheet struct {
-	ID             int64     `json:"Id"`
-	Date           time.Time `json:"Date"`
-	StartTime      int64     `json:"StartTime"`
-	EndTime        int64     `json:"EndTime"`
-	Mealbreak      time.Time `json:"Mealbreak"`
-	TotalTime      float64   `json:"TotalTime"`
-	MealbreakSlots string    `json:"MealbreakSlots"`
+	ID        int64     `json:"Id"`
+	Date      time.Time `json:"Date"`
+	StartTime int64     `json:"StartTime"`
+	EndTime   int64     `json:"EndTime"`
+	Mealbreak time.Time `json:"Mealbreak"`
+	TotalTime float64   `json:"TotalTime"`
+	//	MealbreakSlots string    `json:"MealbreakSlots"`
 }
