@@ -20,19 +20,29 @@ type Roster struct {
 
 // GetStartTime will
 func (obj *Roster) GetStartTime() time.Time {
+	date := time.Now()
 	if obj.MatchedByTimesheet == 1 {
-		return time.Unix(obj.MatchedTimesheet.StartTime, 0)
+		date = time.Unix(obj.MatchedTimesheet.StartTime, 0)
+	} else {
+		date = time.Unix(obj.StartTime, 0)
 	}
-	return time.Unix(obj.StartTime, 0)
+
+	timezone, _ := time.LoadLocation("Australia/Adelaide")
+
+	return date.In(timezone)
 }
 
 // GetEndTime will
 func (obj *Roster) GetEndTime() time.Time {
+	date := time.Now()
 	if obj.MatchedByTimesheet == 1 {
-		return time.Unix(obj.MatchedTimesheet.EndTime, 0)
+		date = time.Unix(obj.MatchedTimesheet.EndTime, 0)
 	}
 
-	return time.Unix(obj.EndTime, 0)
+	date = time.Unix(obj.EndTime, 0)
+	timezone, _ := time.LoadLocation("Australia/Adelaide")
+
+	return date.In(timezone)
 }
 
 // GetTotalTime will
