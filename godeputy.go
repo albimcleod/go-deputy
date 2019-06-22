@@ -218,7 +218,8 @@ func (v *Deputy) GetEmployees(token string, companyId string) (Employees, error)
 	u.Path = "api/v1/resource/Employee/QUERY"
 	urlStr := fmt.Sprintf("%v", u)
 
-	request := fmt.Sprintf(`{"search":{"company":{"field":"Company","type":"eq","data":"%s"}},"join":["ContactObject"]}`, companyId)
+	//request := fmt.Sprintf(`{"search":{"company":{"field":"Company","type":"eq","data":"%s"}},"join":["ContactObject"]}`, companyId)
+	request := fmt.Sprintf(`{"join":["ContactObject"]}`)
 
 	fmt.Println(request)
 
